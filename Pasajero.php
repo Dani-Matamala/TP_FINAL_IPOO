@@ -158,9 +158,8 @@ class Pasajero {
         $res = false;
 
         if ($conexion->conectar()) {
-            $query = "UPDATE pasajero SET pnombre = '$this->nombre', 
-                      papellido = '$this->apellido', ptelefono = '$this->telefono', idviaje = '{$this->getObjViaje()->getIdViaje()}' 
-                      WHERE pdocumento = '$this->documento'";
+            $query = "UPDATE pasajero SET pnombre = '{$this->getNombre()}', papellido = '{$this->getApellido()}', ptelefono = '{$this->getTelefono()}', idviaje = '{$this->getObjViaje()->getIdViaje()}'
+                      WHERE pdocumento = '{$this->getDocumento()}'";
 
             if ($conexion->consultar($query)) {
                 $conexion->desconectar();
@@ -176,13 +175,13 @@ class Pasajero {
         return $res;
     }
 
-    //elimina pasajero del viaje
+
     public function eliminar() {
         $conexion = new Viajes_db();
         $res = false;
 
         if ($conexion->conectar()) {
-            $query = "DELETE FROM pasajero WHERE idviaje = " . $this->getObjViaje()->getIdViaje() . " AND pdocumento = " . $this->getDocumento();
+            $query = "DELETE FROM pasajero WHERE pdocumento = " . $this->getDocumento();
 
             if ($conexion->consultar($query)) {
                 $conexion->desconectar();

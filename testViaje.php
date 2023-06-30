@@ -3,13 +3,14 @@ require_once('Viaje.php');
 require_once('./Pasajero.php');
 require_once('./ResponsableV.php');
 
-$viaje = new Viaje(" ", " ", " ", " ");
+$viaje = new Viaje();
 
 function cargarPasajero($viaje) {
     $nombre = "";
     $apellido = "";
     $numero_documento = "";
     $telefono = "";
+    $res = false;
 
     echo "Ingrese el nombre del pasajero: ";
     $nombre = fgets(STDIN);
@@ -20,15 +21,14 @@ function cargarPasajero($viaje) {
     echo "Ingrese el teléfono del pasajero: ";
     $telefono = fgets(STDIN);
 
-    $pasajero = new Pasajero($nombre, $apellido, $numero_documento, $telefono);
+    $pasajero = new Pasajero();
 
     if ($viaje->agregarPasajero($pasajero)) {
-        echo "Pasajero agregado correctamente.\n";
-        return true;
-    } else {
-        echo "No se pudo agregar al pasajero.\n";
-        return false;
+        if($pasajero->insertar()){
+            $res = true;
+        }
     }
+    return $res;
 }
 
 function cargarResponsable($viaje) {
@@ -47,6 +47,8 @@ function cargarResponsable($viaje) {
     $numero_empleado = fgets(STDIN);
 
     $responsable = new ResponsableV($numero_empleado, $numero_licencia, $nombre, $apellido);
+
+    $responsable->insertar();
 
     $viaje->setResponbleV($responsable);
 }
@@ -69,13 +71,10 @@ do {
     switch ($opcion) {
         case 1:
             // Cargamos la información del viaje
-            echo "Ingrese el código del viaje: ";
-            $codigo = trim(fgets(STDIN));
             echo "Ingrese el destino del viaje: ";
             $destino = trim(fgets(STDIN));
             echo "Ingrese la cantidad máxima de pasajeros: ";
             $maxPasajeros = trim(fgets(STDIN));
-            $viaje->setCodigo($codigo);
             $viaje->setDestino($destino);
             $viaje->setMaxPasajeros($maxPasajeros);
             cargarResponsable($viaje);
@@ -101,7 +100,7 @@ do {
                 case 1:
                     echo "Ingrese el nuevo código del viaje: ";
                     $codigo = trim(fgets(STDIN));
-                    $viaje->setCodigo($codigo);
+                    $viaje->buscar($codigo);
                     break;
                 case 2:
                     echo "Ingrese el nuevo destino del viaje: ";
@@ -114,7 +113,7 @@ do {
                     $viaje->setMaxPasajeros($maxPasajeros);
                     break;
                 case 4:
-                    if ($viaje->getCodigo() !== " ") {
+                    if ($viaje) {
                         cargarPasajero($viaje);
                     } else {
                         echo "Cree un viaje";

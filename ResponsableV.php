@@ -93,6 +93,7 @@ class ResponsableV {
 
     public function buscar($numero_empleado) {
         $conexion = new Viajes_db();
+        $res = false;
 
         if ($conexion->conectar()) {
             $query = "SELECT * FROM responsable WHERE rnumeroempleado = '$numero_empleado'";
@@ -101,7 +102,7 @@ class ResponsableV {
                 $registro = $conexion->respuesta();
                 $this->cargar($registro['rnombre'], $registro['rapellido'], $registro['rnumeroempleado'], $registro['rnumerolicencia']);
                 $conexion->desconectar();
-                return true;
+                $res =  true;
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
             }
@@ -109,7 +110,7 @@ class ResponsableV {
             echo "Falló la conexión a MySQL: " . $conexion->getError();
         }
 
-        return false;
+        return $res;
     }
 
     public static function listar() {
@@ -117,7 +118,7 @@ class ResponsableV {
         $col_responsables = [];
 
         if ($conexion->conectar()) {
-            $query = "SELECT * FROM responsablev";
+            $query = "SELECT * FROM responsable";
 
             if ($conexion->consultar($query)) {
                 while ($registro = $conexion->respuesta()) {

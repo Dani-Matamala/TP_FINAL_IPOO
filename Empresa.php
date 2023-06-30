@@ -86,7 +86,6 @@ class Empresa {
             $resultado = $conexion->consultar($query);
             if ($resultado) {
                 $registro = $conexion->respuesta();
-                echo print_r($registro);
                 $this->cargar($registro['idempresa'], $registro['enombre'], $registro['edireccion']);
                 $res = true;
             }
