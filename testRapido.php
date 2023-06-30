@@ -1,18 +1,50 @@
 <?php
-include_once('Pasajero.php');
-include_once('Viajes_db.php');
+include_once('./Pasajero.php');
+include_once('./Viajes_db.php');
+include_once('./Empresa.php');
+include_once('./ResponsableV.php');
 //creo un objeto pasajero
 $pasajero = new Pasajero();
-
+$empresa = new Empresa();
+$responsable = new ResponsableV();
+$viaje = new Viaje();
 
 //Busca todas las personas almacenadas en la base de datos
-$colPasajeros = $pasajero->listar();
+    // $colPasajeros = $pasajero->listar();
+    // foreach ($colPasajeros as $pas) {
+    //     echo $pas->__toString();
+    //     echo "\n"."-----------------------------------------------------------"."\n";
+    // }
+
+//Busacar todas las Empresas
+    // $colEmpresas = $empresa->listar();
+    // foreach($colEmpresas as $emp){
+    //     echo $emp->__toString();
+    //     echo "\n"."-----------------------------------------------------------"."\n";
+    // }
+
+//Busacar todas las Empresas
+    // $colResponsable = $responsable->listar();
+    // foreach($colResponsable as $res){
+    //     echo $res->__toString();
+    //     echo "\n"."-----------------------------------------------------------"."\n";
+    // }
+
+//Buscar todos los viajes
+//Busacar todas las Empresas
+    // $colViajes = $viaje->listar();
+    // foreach($colViajes as $v){
+    //     echo $v->__toString();
+    //     echo "\n"."-----------------------------------------------------------"."\n";
+    // }
+
+//buscar una persona y actualizarla
+$pasajero->buscar(111111);
+$pasajero->setNombre('Daniela');
+$pasajero->actualizar();
 
 
-foreach ($colPasajeros as $pas) {
-    echo $pas->__toString();
-    echo "\n"."-----------------------------------------------------------"."\n";
-}
+
 
 
 // // Incluir la clase Viaje

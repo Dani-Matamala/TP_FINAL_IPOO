@@ -90,7 +90,6 @@ class Viaje {
         $this->setEmpresa($obj_empresa);
         $this->setResponsable($responsable);
         $this->setImporte($importe);
-        $this->col_pasajeros = $this->listar();
     }
 
     public function __toString() {
@@ -103,7 +102,7 @@ class Viaje {
             "Empresa: " . $empresa . "\n" .
             "Responsable: " . $responsable . "\n" .
             "Importe: " . $this->getImporte() . "\n".
-            "Pasajeros: " . $this->getPasajeros();
+            "Pasajeros: " . $this->getColPasajeros();
     }
 
     private function existePasajero($pasajero) {

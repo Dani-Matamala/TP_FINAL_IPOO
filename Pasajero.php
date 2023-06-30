@@ -116,7 +116,6 @@ class Pasajero {
                 $newviaje = new Viaje();
                 $newviaje->buscar($registro['idviaje']);
                 $this->cargar($registro['pdocumento'], $registro['pnombre'], $registro['papellido'], $registro['ptelefono'], $newviaje);
-                $newviaje->
                 $conexion->desconectar();
                 $res =  true;
             } else {
