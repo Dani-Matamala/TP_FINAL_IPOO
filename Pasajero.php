@@ -8,14 +8,14 @@ class Pasajero {
     private $nombre;
     private $apellido;
     private $telefono;
-    private ?Viaje $id_viaje;
+    private ?Viaje $obj_viaje;
 
     public function __construct() {
         $this->documento = "";
         $this->nombre = "";
         $this->apellido = "";
         $this->telefono = "";
-        $this->id_viaje = null;
+        $this->obj_viaje = null;
     }
 
     public function getDocumento() {
@@ -50,20 +50,20 @@ class Pasajero {
         $this->telefono = $telefono;
     }
 
-    public function getIdViaje() {
-        return $this->id_viaje;
+    public function getObjViaje() {
+        return $this->obj_viaje;
     }
 
-    public function setIdViaje($id_viaje) {
-        $this->id_viaje = $id_viaje;
+    public function setIdViaje($obj_viaje) {
+        $this->obj_viaje = $obj_viaje;
     }
 
-    public function cargar($documento, $nombre, $apellido, $telefono, $id_viaje) {
+    public function cargar($documento, $nombre, $apellido, $telefono, $obj_viaje) {
         $this->setDocumento($documento);
         $this->setNombre($nombre);
         $this->setApellido($apellido);
         $this->setTelefono($telefono);
-        $this->setIdViaje($id_viaje);
+        $this->setIdViaje($obj_viaje);
     }
 
     public function __toString() {
@@ -71,7 +71,7 @@ class Pasajero {
             "Nombre: " . $this->getNombre() . "\n" .
             "Apellido: " . $this->getApellido() . "\n" .
             "Teléfono: " . $this->getTelefono() . "\n" .
-            "ID Viaje: " . $this->getIdViaje()->getIdViaje();
+            "ID Viaje: " . $this->getObjViaje()->getIdViaje() . "\n";
     }
 
     /**
@@ -88,8 +88,8 @@ class Pasajero {
         }
 
         if (!$this->buscar($this->getDocumento())) {
-            $query = "INSERT INTO pasajero (pdocumento, pnombre, papellido, ptelefono, pid_viaje) 
-            VALUES ('$this->documento', '$this->nombre', '$this->apellido', '$this->telefono', '$this->id_viaje')";
+            $query = "INSERT INTO pasajero (pdocumento, pnombre, papellido, ptelefono, idviaje) 
+            VALUES ('{$this->getDocumento()}', '{$this->getNombre()}', '{$this->getApellido()}', '{$this->getTelefono()}', '{$this->getObjViaje()->getIdViaje()}')";
 
 
             if ($conexion->consultar($query)) {
@@ -115,7 +115,8 @@ class Pasajero {
                 $registro = $conexion->respuesta();
                 $newviaje = new Viaje();
                 $newviaje->buscar($registro['idviaje']);
-                $this->cargar($registro['pdocumento'], $registro['pnombre'], $registro['papellido'], $registro['ptelefono'], $newviaje); 
+                $this->cargar($registro['pdocumento'], $registro['pnombre'], $registro['papellido'], $registro['ptelefono'], $newviaje);
+                $newviaje->
                 $conexion->desconectar();
                 $res =  true;
             } else {
@@ -142,7 +143,6 @@ class Pasajero {
                     $col_pasajeros[] = $pasajero;
                 }
                 $conexion->desconectar();
-                return $col_pasajeros;
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
             }
@@ -158,9 +158,9 @@ class Pasajero {
         $res = false;
 
         if ($conexion->conectar()) {
-            $query = "UPDATE pasajero SET pdocumento = '$this->documento', pnombre = '$this->nombre', 
-                      papellido = '$this->apellido', ptelefono = '$this->telefono', pid_viaje = '$this->id_viaje' 
-                      WHERE id = '$this->id_viaje'";
+            $query = "UPDATE pasajero SET pnombre = '$this->nombre', 
+                      papellido = '$this->apellido', ptelefono = '$this->telefono', idviaje = '{$this->getObjViaje()->getIdViaje()}' 
+                      WHERE pdocumento = '$this->documento'";
 
             if ($conexion->consultar($query)) {
                 $conexion->desconectar();
@@ -176,12 +176,13 @@ class Pasajero {
         return $res;
     }
 
+    //elimina pasajero del viaje
     public function eliminar() {
         $conexion = new Viajes_db();
         $res = false;
 
         if ($conexion->conectar()) {
-            $query = "DELETE FROM pasajero WHERE idviaje = " . $this->getIdViaje();
+            $query = "DELETE FROM pasajero WHERE idviaje = " . $this->getObjViaje()->getIdViaje() . " AND pdocumento = " . $this->getDocumento();
 
             if ($conexion->consultar($query)) {
                 $conexion->desconectar();

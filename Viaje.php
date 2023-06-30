@@ -9,6 +9,7 @@ class Viaje {
     private $maxPasajeros;
     private ?Empresa $obj_empresa;
     private ?ResponsableV $obj_responsable;
+    private array $col_pasajeros;
     private $importe;
 
     public function __construct() {
@@ -18,6 +19,7 @@ class Viaje {
         $this->obj_empresa = null;
         $this->obj_responsable = null;
         $this->importe = 0.0;
+        $this->col_pasajeros = [];
     }
 
     public function getIdViaje() {
@@ -68,6 +70,19 @@ class Viaje {
         $this->importe = $importe;
     }
 
+    public function getPasajeros() {
+        return $this->col_pasajeros;
+    }
+
+    public function getColPasajeros() {
+        $pasajero = "";
+        foreach ($this->getPasajeros()  as $pasajero){
+            $pasajero .=  $pasajero->__toString() . "\n";
+        };
+
+        return $pasajero;
+    }
+
     public function cargar($idViaje, $destino, $maxPasajeros, $obj_empresa, $responsable, $importe) {
         $this->setIdViaje($idViaje);
         $this->setDestino($destino);
@@ -75,6 +90,7 @@ class Viaje {
         $this->setEmpresa($obj_empresa);
         $this->setResponsable($responsable);
         $this->setImporte($importe);
+        $this->col_pasajeros = $this->listar();
     }
 
     public function __toString() {
@@ -86,9 +102,52 @@ class Viaje {
             "Máximo de pasajeros: " . $this->getMaxPasajeros() . "\n" .
             "Empresa: " . $empresa . "\n" .
             "Responsable: " . $responsable . "\n" .
-            "Importe: " . $this->getImporte() . "\n";
+            "Importe: " . $this->getImporte() . "\n".
+            "Pasajeros: " . $this->getPasajeros();
     }
 
+    private function existePasajero($pasajero) {
+        foreach ($this->col_pasajeros as $buscado) {
+            if ($buscado->geDdocumento() == $pasajero->getDocumento()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function agregarPasajero($pasajero) {
+        $res = false;
+        if (count($this->col_pasajeros) < $this->maxPasajeros && !$this->existePasajero($pasajero)) {
+            $pasajero->setIdViaje($this->getIdViaje());
+            array_push($this->col_pasajeros, $pasajero);
+            $res = true; // Caso en que todo salió bien 
+        } else {
+            $res = false; // Caso en que fallé la inserción del objeto pasajero false; // Caso en que falló la inserción del objeto pasajero
+        }
+        return $res;
+    }
+
+    public function quitarPasajero($pasajero) {
+        foreach ($this->col_pasajeros as $key => $buscado) {
+            if ($buscado->geDdocumento() == $pasajero->geDdocumento()) {
+                unset($this->col_pasajeros[$key]);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function venderPasaje($objPasajero) {
+        if ($this->hayPasajesDisponible()) {
+            $this->agregarPasajero($objPasajero);
+        } else {
+            return null;// debe ser manejado en la clase principal 
+        }
+    }
+
+    public function hayPasajesDisponible() {
+        return count($this->col_pasajeros) < $this->maxPasajeros;
+    }
     /**
      * CRUD para la clase Viaje
      */
@@ -225,7 +284,6 @@ class Viaje {
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();
         }
-
         return $res;
     }
 }

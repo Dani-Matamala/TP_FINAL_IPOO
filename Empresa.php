@@ -78,19 +78,20 @@ class Empresa {
         return $res;
     }
 
-    public static function buscar($idempresa) {
+    public function buscar($idempresa) {
         $conexion = new Viajes_db();
         $res = false;
-        $empresa = null;
         if ($conexion->conectar()) {
             $query = "SELECT * FROM empresa WHERE idempresa = '$idempresa'";
             $resultado = $conexion->consultar($query);
             if ($resultado) {
                 $registro = $conexion->respuesta();
-                $empresa = new Empresa();
-                $empresa->cargar($registro['idempresa'], $registro['enombre'], $registro['edireccion']);
+                echo print_r($registro);
+                $this->cargar($registro['idempresa'], $registro['enombre'], $registro['edireccion']);
+                $res = true;
             }
         }
+        return $res;
     }
 
     public static function listar() {
@@ -102,13 +103,11 @@ class Empresa {
 
             if ($conexion->consultar($query)) {
                 while ($registro = $conexion->respuesta()) {
-                    $empresa = new Viaje();
+                    $empresa = new Empresa();
                     $empresa->buscar($registro['idempresa']); // Llamada al método buscar
-
-                    $col_empresa[] = $empresa;
+                    $col_empresa[] = $empresa;               
                 }
                 $conexion->desconectar();
-                return $col_empresa;
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
             }
