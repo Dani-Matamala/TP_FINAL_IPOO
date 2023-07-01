@@ -290,16 +290,6 @@ class Viaje {
         $res = false;
         $idviaje = $this->getIdViaje();
 
-        //esto se realiza en el front
-        // $col_pasajeros= Pasajero::listar();
-        // foreach ($col_pasajeros as $pasajero) {
-        //     if ($pasajero->getIdViaje() == $idviaje) {
-        //         $pasajero->setIdViaje(null);
-        //         $pasajero->eliminar();
-        //         $res = true;
-        //     }
-        // }
-
         if ($conexion->conectar()) {
             $query = "DELETE FROM viaje WHERE idviaje = '$idviaje'";
 

@@ -190,7 +190,7 @@ class Pasajero {
 
     /**
      * Elimina los datos del pasajero en la base de datos.
-     * @return bool
+     * //@return bool
      */
     public function eliminar() {
         $conexion = new Viajes_db();

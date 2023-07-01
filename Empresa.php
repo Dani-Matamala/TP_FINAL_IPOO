@@ -5,7 +5,7 @@ class Empresa {
     private $direccion;
 
     public function __construct() {
-        $this->idempresa = "";
+        $this->idempresa = null;
         $this->nombre = "";
         $this->direccion = "";
     }
@@ -59,7 +59,7 @@ class Empresa {
             $direccion = $this->getDireccion();
 
             //setIdEmpresa($id) es privado
-            if (!$this->getIdempresa()=== '') {
+            if (!$this->getIdempresa()=== null) {
                 $query = "INSERT INTO empresa (nombre, direccion) VALUES ($nombre, $direccion)";
 
                 if ($id = $conexion->devuelveIDInsercion($query)) {
