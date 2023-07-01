@@ -1,88 +1,158 @@
 <?php
-require_once 'Viajes_db.php';
+include_once './Pasajero.php';
+include_once './Viaje.php';
+include_once './ResponsableV.php';
+include_once './Empresa.php';
+include_once './Pasajero.php';
+include_once "./Viajes_db.php";
 
-class TestViaje
-{
-    public static function cargarEmpresa()
-    {
-        // Crear instancia de Viajes_db
-        $conexion = new Viajes_db();
 
-        // Conectar a la base de datos
-        $conexion->conectar();
+//coleccion de los datos cargados en la base de datos
 
-        // Crear una empresa
-        $empresa = new Empresa();
-        $empresa->setNombre("Empresa XYZ");
-        $empresa->setDireccion("Calle Principal 123");
+$col_responsables = ResponsableV::listar();
+$col_empresas = Empresa::listar();
+$col_pasajeros = Pasajero::listar();
 
-        // Insertar la empresa en la base de datos
-        $empresa->insertar($empresa);
-
-        // Cerrar la conexión
-        $conexion->desconectar();
-    }
-
-    public static function insertarViaje()
-    {
-        // Crear instancia de Viajes_db
-        $conexion = new Viajes_db();
-
-        // Conectar a la base de datos
-        $conexion->conectar();
-
-        // Crear un viaje
-        $viaje = new Viaje();
-        $viaje->setIdViaje(1);
-        $viaje->setOrigen("Ciudad A");
-        $viaje->setDestino("Ciudad B");
-        $viaje->setFecha("2023-05-15");
-        $viaje->setHoraPartida("10:00");
-        $viaje->setCantidadAsientos(10);
-        $viaje->setImporte(100);
-
-        // Insertar el viaje en la base de datos
-        $conexion->insertarViaje($viaje);
-
-        // Cerrar la conexión
-        $conexion->cerrarConexion();
-    }
-
-    public static function cargarPasajeros()
-    {
-        // Crear instancia de Viajes_db
-        $conexion = new Viajes_db();
-
-        // Conectar a la base de datos
-        $conexion->conectar();
-
-        // Crear tres pasajeros
-        $pasajero1 = new Pasajero();
-        $pasajero1->setIdPasajero(1);
-        $pasajero1->setNombre("Juan");
-        $pasajero1->setApellido("Pérez");
-
-        $pasajero2 = new Pasajero();
-        $pasajero2->setIdPasajero(2);
-        $pasajero2->setNombre("María");
-        $pasajero2->setApellido("Gómez");
-
-        $pasajero3 = new Pasajero();
-        $pasajero3->setIdPasajero(3);
-        $pasajero3->setNombre("Carlos");
-        $pasajero3->setApellido("López");
-
-        // Insertar los pasajeros en la base de datos
-        $conexion->insertarPasajero($pasajero1);
-        $conexion->insertarPasajero($pasajero2);
-        $conexion->insertarPasajero($pasajero3);
-
-        // Cerrar la conexión
-        $conexion->cerrarConexion();
+function mostrarViajes() {
+    $col_viajes = [];
+    $col_viajes = Viaje::listar();
+    foreach ($col_viajes as $viaje) {
+        $viaje->__toString();
+        echo "\n";
     }
 }
 
-// Ejemplo de uso
-TestViaje::cargarEmpresa();
-TestViaje::insertarViaje();
-TestViaje::cargarPasajeros();
+function mostrarResponsables() {
+    $col_responsables = [];
+    $col_responsables = ResponsableV::listar();
+    foreach ($col_responsables as $responsable) {
+        $responsable->__toString();
+        echo "\n";
+    }
+}
+
+function mostrarEmpresas() {
+    $col_empresas = [];
+    $col_empresas = Empresa::listar();
+    foreach ($col_empresas as $empresa) {
+        $empresa->__toString();
+        echo "\n";
+    }
+}
+
+function mostrarPasajeros() {
+    $col_pasajeros = [];
+    $col_pasajeros = Pasajero::listar();
+    foreach ($col_pasajeros as $pasajero) {
+        $pasajero->__toString();
+        echo "\n";
+    }
+}
+
+
+
+function cargarEmpresa() {
+    $res = false;
+    $id = 0; //luego se le asignara el id asignado por la base de datos
+    // Crear una empresa
+    echo "Ingrese el nombre de la empresa:\n";
+    $nombre = trim(fgets(STDIN));
+    echo "Ingrese la direccion de la empresa:\n";
+    $direccion = trim(fgets(STDIN));
+    $obj_empresa = new empresa();
+    $obj_empresa->cargar($id, $nombre, $direccion);
+
+    if ($obj_empresa->insertar()) {
+        $mensaje = "\nLa empresa fue cargada con exito\n";
+    }
+    return $res;
+}
+
+function cargarViaje() {
+    $res = false;
+    $id = 0; //luego se le asignara el id asignado por la base de datos
+    // Crea un viaje
+    $viaje = new Viaje();
+    // Crea una empresa
+    $empresa = new Empresa();
+    // Crea un Reponsable
+    $responsable = new ResponsableV();
+    //Luego esto valores saran actulizados por el ORM de Viaje
+    echo "Ingrese el nombre del destino:\n";
+    $destino = trim(fgets(STDIN));
+    echo "Ingrese la cantidad maxima de pasajeros:\n";
+    $maxPasajeros = trim(fgets(STDIN));
+    echo "Ingrese el ID de la empresa a la que pertenece este viaje:\n";
+    mostrarEmpresas();
+    $id_empresa = trim(fgets(STDIN));
+    if ($empresa->buscar($id_empresa)) {
+        echo "Ingrese el ID del responsable a cargo del viaje:\n";
+        mostrarResponsables();
+        $id_responsable = trim(fgets(STDIN));
+        if ($responsable->buscar($id_responsable)) {
+            echo "ingrese el monto del viaje \n";
+            $monto = trim(fgets(STDIN));
+            $viaje->cargar($id, $destino, $maxPasajeros, $empresa, $responsable, $monto);
+            if ($viaje->insertar() === true) {
+                echo "\nEl viaje fue cargado con exito\n";
+            }
+            else{
+                echo "\nEl viaje no pudo ser cargado\n";
+            }
+        }else{
+            echo "\nEl responsable no pudo ser cargado\n";
+        }
+    } else {
+        echo "\nEl viaje no pudo ser cargado\n";
+    }
+    return $res;
+}
+
+function cargarPasajero() {
+    $res = false;
+    $pasajero = new Pasajero();
+    $viaje = null; // la carga de viaje se realizara mediante otro metodo
+
+    echo "Ingrese el número de documento del pasajero: ";
+    $numero_documento = fgets(STDIN);
+    if($pasajero->buscar($numero_documento) !== true){
+        echo "Ingrese el nombre del pasajero: ";
+        $nombre = fgets(STDIN);
+        echo "Ingrese el apellido del pasajero: ";
+        $apellido = fgets(STDIN);
+        echo "Ingrese el teléfono del pasajero: ";
+        $telefono = fgets(STDIN);
+        $pasajero->cargar($numero_documento, $nombre, $apellido, $telefono, $viaje);
+        $res=$pasajero->insertar();
+        if($res == true){
+            echo "Pasajero ingresado correctamente\n";
+        } else {
+            echo "No fue posible cargar el pasajero\n";
+        }
+    } else{
+        echo "El pasajero ya existe\n";
+    }
+
+   return $res;
+}
+
+function cargarResponsable() {
+    $res = false;
+    $responsable= new ResponsableV();
+    $numero_empleado = null;
+
+    echo "Ingrese num de licencia del responsable\n";
+    $numerolicencia= trim(fgets(STDIN));
+    echo "Ingrese nombre del responsable:\n";
+    $nombreResp= trim(fgets(STDIN));
+    echo "Ingrese apellido del responsable:\n";
+    $apellidoResp= trim(fgets(STDIN));
+    $responsable->cargar($numero_empleado,$numerolicencia, $nombreResp, $apellidoResp);
+    $res=$responsable->insertar();
+    if( $res == true){
+        echo"Responsable ingresado correctamente\n";
+    }else {
+        echo"No fue posible cargar el responsable o ya existe\n";
+    }
+    return $res;
+}

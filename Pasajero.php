@@ -136,8 +136,8 @@ class Pasajero {
     }
 
     /**
-     * Actualiza los datos de los pasajeros eexistentes en la base de datos.
-     * @return bool
+     * Lista los datos de los pasajeros eexistentes en la base de datos.
+     * @return Array
      */
     public static function listar() {
         $conexion = new Viajes_db();

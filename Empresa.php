@@ -99,7 +99,7 @@ class Empresa {
 
     /**
      * Lista los datos de la empresa en la base de datos.
-     * @return bool
+     * @return Array
      */
     public static function listar() {
         $conexion = new Viajes_db();

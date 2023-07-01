@@ -6,8 +6,8 @@ class ResponsableV {
     private $apellido;
 
     public function __construct() {
-        $this->numero_empleado = "";
-        $this->numero_licencia = "";
+        $this->numero_empleado = 0;
+        $this->numero_licencia = 0;
         $this->nombre = "";
         $this->apellido = "";
     }
@@ -24,7 +24,7 @@ class ResponsableV {
         return $this->numero_empleado;
     }
 
-    public function setNumeroEmpleado($numero_empleado) {
+    private function setNumeroEmpleado($numero_empleado) {
         $this->numero_empleado = $numero_empleado;
     }
 
@@ -79,9 +79,8 @@ class ResponsableV {
             $nombre = $this->getNombre();
             $apellido = $this->getApellido();
             
-
             if (!$this->buscar($this->getNumeroEmpleado())) {
-                $query = "INSERT INTO responsable (rnumeroempleado, rnumerolicencia, rnombre, rapellido)";
+                $query = "INSERT INTO responsable (rnumeroempleado, rnumerolicencia, rnombre, rapellido) VALUES ('$numero_empleado', '$numero_licencia', '$nombre', '$apellido')";
 
                 if ($conexion->consultar($query)) {
                     $res = true;
@@ -121,7 +120,7 @@ class ResponsableV {
 
     /**
      * Lista los datos de los responsable que exiten en la base de datos.
-     * @return bool
+     * @return Array
      */
     public static function listar() {
         $conexion = new Viajes_db();

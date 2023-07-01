@@ -16,8 +16,8 @@ class Viaje {
         $this->idviaje = "";
         $this->destino = "";
         $this->maxPasajeros = 0;
-        $this->obj_empresa = null;
-        $this->obj_responsable = null;
+        $this->obj_empresa = new Empresa();
+        $this->obj_responsable = new ResponsableV();
         $this->importe = 0.0;
         $this->col_pasajeros = [];
     }
@@ -93,8 +93,8 @@ class Viaje {
     }
 
     public function __toString() {
-        $empresa = $this->obj_empresa ? $this->obj_empresa->__toString() : "Sin empresa asignada";
-        $responsable = $this->obj_responsable ? $this->obj_responsable->__toString() : "Sin responsable asignado";
+        $empresa = $this->getEmpresa()->getIdempresa()!== 0 ? $this->getEmpresa()->__toString() : "Sin empresa asignada";
+        $responsable = $this->getResponsable()->getNumeroEmpleado() !== 0 ? $this->getResponsable()->__toString() : "Sin responsable asignado";
 
         return "ID Viaje: " . $this->getIdViaje() . "\n" .
             "Destino: " . $this->getDestino() . "\n" .
@@ -165,12 +165,12 @@ class Viaje {
         }
 
         if (!$this->buscar($this->getIdViaje())) {
-            $empresa = $this->obj_empresa ? $this->obj_empresa->__toString() : null;
-            $responsable = $this->obj_responsable ? $this->obj_responsable->__toString() : null;
+            $empresa = $this->getEmpresa() ? $this->getEmpresa()->getIdempresa() : 0;
+            $responsable = $this->getResponsable() ? $this->getResponsable()->getNumeroEmpleado() : 0;
 
             $query = "INSERT INTO viaje (vdestino, vcantmaxpasajeros, idempresa, rnumeroempleado, vimporte) 
-            VALUES ('{$this->getDestino()}', {$this->getMaxPasajeros()}, '{$this->getEmpresa()->getIdEmpresa()}', 
-            {$this->getResponsable()->getNumeroEmpleado()}, {$this->getImporte()})";
+            VALUES ('{$this->getDestino()}', {$this->getMaxPasajeros()}, '$empresa', 
+            '$responsable', {$this->getImporte()})";
 
             if ($idConsulta = $conexion->devuelveIDInsercion($query)) {
                 $this->setIdViaje($idConsulta);
@@ -219,7 +219,7 @@ class Viaje {
 
     /**
      * Lista los datos del viaje en la base de datos.
-     * @return bool
+     * @return Array
      */
     public static function listar() {
         $conexion = new Viajes_db();
