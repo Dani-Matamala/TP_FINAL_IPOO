@@ -63,6 +63,10 @@ class ResponsableV {
      * CRUD para la clase ResponsableV
      */
 
+    /**
+     * Inserta los datos del responsable en la base de datos.
+     * @return bool
+     */
     public function insertar() {
         $conexion = new Viajes_db();
         $res = false;
@@ -77,20 +81,23 @@ class ResponsableV {
             
 
             if (!$this->buscar($this->getNumeroEmpleado())) {
-                $query = "INSERT INTO responsablev (rnumeroempleado, rnumerolicencia, rnombre, rapellido)";
+                $query = "INSERT INTO responsable (rnumeroempleado, rnumerolicencia, rnombre, rapellido)";
 
                 if ($conexion->consultar($query)) {
-                    $conexion->desconectar();
                     $res = true;
                 } else {
                     echo "Error al insertar el registro: " . $conexion->getError();
-                    $conexion->desconectar();
                 }
             }
         }
         return $res;
     }
 
+
+    /**
+     * Busca un determinado responsable en la base de datos.
+     * @return bool
+     */
     public function buscar($numero_empleado) {
         $conexion = new Viajes_db();
         $res = false;
@@ -101,7 +108,6 @@ class ResponsableV {
             if ($conexion->consultar($query)) {
                 $registro = $conexion->respuesta();
                 $this->cargar($registro['rnombre'], $registro['rapellido'], $registro['rnumeroempleado'], $registro['rnumerolicencia']);
-                $conexion->desconectar();
                 $res =  true;
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
@@ -113,6 +119,10 @@ class ResponsableV {
         return $res;
     }
 
+    /**
+     * Lista los datos de los responsable que exiten en la base de datos.
+     * @return bool
+     */
     public static function listar() {
         $conexion = new Viajes_db();
         $col_responsables = [];
@@ -126,7 +136,6 @@ class ResponsableV {
                     $responsable->buscar($registro['rnumeroempleado']);
                     $col_responsables[] = $responsable;
                 }
-                $conexion->desconectar();
                 return $col_responsables;
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
@@ -137,21 +146,23 @@ class ResponsableV {
         return $col_responsables;
     }
 
+    /**
+     * Actualiza los datos de un determinado responsable en la base de datos.
+     * @return bool
+     */
     public function actualizar() {
         $conexion = new Viajes_db();
         $res = false;
 
         if ($conexion->conectar()) {
-            $query = "UPDATE responsablev SET rnumerolicencia = '$this->numero_licencia', 
+            $query = "UPDATE responsable SET rnumerolicencia = '$this->numero_licencia', 
                       rnombre = '$this->nombre', rapellido = '$this->apellido' 
                       WHERE rnumeroempleado = '$this->numero_empleado'";
 
             if ($conexion->consultar($query)) {
-                $conexion->desconectar();
                 $res = true;
             } else {
                 echo "Error al actualizar el registro: " . $conexion->getError();
-                $conexion->desconectar();
             }
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();
@@ -160,19 +171,21 @@ class ResponsableV {
         return $res;
     }
 
+    /**
+     * Elimina los datos del responsable en la base de datos.
+     * @return bool
+     */
     public function eliminar() {
         $conexion = new Viajes_db();
         $res = false;
 
         if ($conexion->conectar()) {
-            $query = "DELETE FROM responsablev WHERE rnumeroempleado = '$this->numero_empleado'";
+            $query = "DELETE FROM responsable WHERE rnumeroempleado = '$this->numero_empleado'";
 
             if ($conexion->consultar($query)) {
-                $conexion->desconectar();
                 $res = true;
             } else {
                 echo "Error al eliminar el registro: " . $conexion->getError();
-                $conexion->desconectar();
             }
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();

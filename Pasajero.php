@@ -78,6 +78,10 @@ class Pasajero {
      * CRUD para la clase Pasajero
      */
 
+    /**
+     * Inserta los datos del pasajero en la base de datos.
+     * @return bool
+     */
     public function insertar() {
         $conexion = new Viajes_db();
         $res = false;
@@ -93,17 +97,20 @@ class Pasajero {
 
 
             if ($conexion->consultar($query)) {
-                $conexion->desconectar();
+               
                 $res = true;
             } else {
                 echo "Error al insertar el registro: " . $conexion->getError();
-                $conexion->desconectar();
+               
             }
             $res = true;
         }
         return $res;
     }
-
+    /**
+     * Busca los datos del pasajero en la base de datos.
+     * @return bool
+     */
     public function buscar($id) {
         $conexion = new Viajes_db();
         $res = false;
@@ -116,7 +123,7 @@ class Pasajero {
                 $newviaje = new Viaje();
                 $newviaje->buscar($registro['idviaje']);
                 $this->cargar($registro['pdocumento'], $registro['pnombre'], $registro['papellido'], $registro['ptelefono'], $newviaje);
-                $conexion->desconectar();
+               
                 $res =  true;
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
@@ -128,6 +135,10 @@ class Pasajero {
         return $res;
     }
 
+    /**
+     * Actualiza los datos de los pasajeros eexistentes en la base de datos.
+     * @return bool
+     */
     public static function listar() {
         $conexion = new Viajes_db();
         $col_pasajeros = [];
@@ -141,7 +152,7 @@ class Pasajero {
                     $pasajero->buscar($registro['pdocumento']);
                     $col_pasajeros[] = $pasajero;
                 }
-                $conexion->desconectar();
+               
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
             }
@@ -151,7 +162,10 @@ class Pasajero {
 
         return $col_pasajeros;
     }
-
+    /**
+     * Actualiza los datos del pasajero en la base de datos.
+     * @return bool
+     */
     public function actualizar() {
         $conexion = new Viajes_db();
         $res = false;
@@ -161,11 +175,11 @@ class Pasajero {
                       WHERE pdocumento = '{$this->getDocumento()}'";
 
             if ($conexion->consultar($query)) {
-                $conexion->desconectar();
+               
                 $res = true;
             } else {
                 echo "Error al actualizar el registro: " . $conexion->getError();
-                $conexion->desconectar();
+               
             }
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();
@@ -174,20 +188,24 @@ class Pasajero {
         return $res;
     }
 
-
+    /**
+     * Elimina los datos del pasajero en la base de datos.
+     * @return bool
+     */
     public function eliminar() {
         $conexion = new Viajes_db();
         $res = false;
 
         if ($conexion->conectar()) {
+
             $query = "DELETE FROM pasajero WHERE pdocumento = " . $this->getDocumento();
 
             if ($conexion->consultar($query)) {
-                $conexion->desconectar();
+               
                 $res = true;
             } else {
                 echo "Error al eliminar el registro: " . $conexion->getError();
-                $conexion->desconectar();
+               
             }
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();

@@ -1,95 +1,122 @@
 <?php
-class Viajes_db {
-    private string $HOSTNAME;
-    private string $BASEDATOS;
-    private string $USUARIO;
-    private string $CLAVE;
-    private ?mysqli $CONEXION;
-    private ?mysqli_result $RESULT;
-    private ?string $ERROR;
-    private ?string $QUERY;
+/* IMPORTANTE !!!!  Clase para (PHP 5, PHP 7)*/
 
-
-    public function __construct() {
+class Viajes_db  {
+    private $HOSTNAME;
+    private $BASEDATOS;
+    private $USUARIO;
+    private $CLAVE;
+    private $CONEXION;
+    private $QUERY;
+    private $RESULT;
+    private $ERROR;
+    /**
+     * Constructor de la clase que inicia ls variables instancias de la clase
+     * vinculadas a la coneccion con el Servidor de BD
+     */
+    public function __construct(){
         $this->HOSTNAME = "127.0.0.1";
         $this->BASEDATOS = "bdviajes";
         $this->USUARIO = "root";
-        $this->CLAVE = "";
-        $this->RESULT = null;
-        $this->ERROR = null;
-        $this->QUERY = "";
+        $this->CLAVE="";
+        $this->RESULT=0;
+        $this->QUERY="";
+        $this->ERROR="";
     }
-
-    public function getError(): ?string {
-        return $this->ERROR;
+    /**
+     * Funcion que retorna una cadena
+     * con una peque�a descripcion del error si lo hubiera
+     *
+     * @return string
+     */
+    public function getError(){
+        return "\n".$this->ERROR;
+        
     }
-
-    public function conectar(): bool {
-        $resp = false;
-        $conexion = new mysqli($this->HOSTNAME, $this->USUARIO, $this->CLAVE, $this->BASEDATOS);
-        if ($conexion->connect_errno) {
-            $this->ERROR = $conexion->connect_errno . ": " . $conexion->connect_error;
-        } else {
-            $this->CONEXION = $conexion;
-            unset($this->QUERY);
-            unset($this->ERROR);
-            $resp = true;
-        }
-        return $resp;
-    }
-
-    public function consultar(string $consulta): bool {
-        $resp = false;
-        unset($this->ERROR);
-        $this->QUERY = $consulta;
-        $result = $this->CONEXION->query($consulta);
-        if ($result !== false) {
-            $this->RESULT = $result;
-            $resp = true;
-        } else {
-            $this->ERROR = $this->CONEXION->errno . ": " . $this->CONEXION->error;
-        }
-        return $resp;
-    }
-
-    public function respuesta(): ?array {
-        $resp = null;
-        if ($this->RESULT !== null) {
-            unset($this->ERROR);
-            if ($temp = $this->RESULT->fetch_assoc()) {
-                $resp = $temp;
-            } else {
-                $this->RESULT->free_result();
+    
+    /**
+     * Inicia la coneccion con el Servidor y la  Base Datos Mysql.
+     * Retorna true si la coneccion con el servidor se pudo establecer y false en caso contrario
+     *
+     * @return boolean
+     */
+    public  function conectar(){
+        $resp  = false;
+        $conexion = mysqli_connect($this->HOSTNAME,$this->USUARIO,$this->CLAVE,$this->BASEDATOS);
+        if ($conexion){
+            if (mysqli_select_db($conexion,$this->BASEDATOS)){
+                $this->CONEXION = $conexion;
+                unset($this->QUERY);
+                unset($this->ERROR);
+                $resp = true;
+            }  else {
+                $this->ERROR = mysqli_errno($conexion) . ": " .mysqli_error($conexion);
             }
-        } else {
-            $this->ERROR = $this->CONEXION->errno . ": " . $this->CONEXION->error;
+        }else{
+            $this->ERROR =  mysqli_errno($conexion) . ": " .mysqli_error($conexion);
         }
         return $resp;
     }
-
-    public function devuelveIDInsercion(string $consulta): ?int {
+    
+    /**
+     * Ejecuta una consulta en la Base de Datos.
+     * Recibe la consulta en una cadena enviada por parametro.
+     *
+     * @param string $consulta
+     * @return boolean
+     */
+    public function consultar($consulta){
+        $resp  = false;
+        unset($this->ERROR);
+        $this->QUERY = $consulta;
+        if($this->RESULT = mysqli_query($this->CONEXION,$consulta)){
+            $resp = true;
+        } else {
+            $this->ERROR =mysqli_errno( $this->CONEXION).": ". mysqli_error( $this->CONEXION);
+        }
+        return $resp;
+    }
+    
+    /**
+     * Devuelve un registro retornado por la ejecucion de una consulta
+     * el puntero se despleza al siguiente registro de la consulta
+     *
+     * @return boolean
+     */
+    public function respuesta() {
+        $resp = null;
+        if ($this->RESULT){
+            unset($this->ERROR);
+            if($temp = mysqli_fetch_assoc($this->RESULT)){
+                $resp = $temp;
+            }else{
+                mysqli_free_result($this->RESULT);
+            }
+        }else{
+            $this->ERROR = mysqli_errno($this->CONEXION) . ": " . mysqli_error($this->CONEXION);
+        }
+        return $resp ;
+    }
+    
+    /**
+     * Devuelve el id de un campo autoincrement utilizado como clave de una tabla
+     * Retorna el id numerico del registro insertado, devuelve null en caso que la ejecucion de la consulta falle
+     *
+     * @param string $consulta
+     * @return int id de la tupla insertada
+     */
+    public function devuelveIDInsercion($consulta){
         $resp = null;
         unset($this->ERROR);
         $this->QUERY = $consulta;
-        $result = $this->CONEXION->query($consulta);
-        if ($result !== false) {
-            $id = $this->CONEXION->insert_id;
-            $resp = $id;
+        if ($this->RESULT = mysqli_query($this->CONEXION,$consulta)){
+            $id = mysqli_insert_id();
+            $resp =  $id;
         } else {
-            $this->ERROR = $this->CONEXION->errno . ": " . $this->CONEXION->error;
+            $this->ERROR =mysqli_errno( $this->CONEXION) . ": " . mysqli_error( $this->CONEXION);
+           
         }
-        return $resp;
+    return $resp;
     }
-
-    public function desconectar(): bool {
-        $resp = false;
-        if ($this->CONEXION !== null && $this->CONEXION->close()) {
-            $resp = true;
-            unset($this->CONEXION);
-            unset($this->QUERY);
-            unset($this->RESULT);
-            unset($this->ERROR);
-        }
-        return $resp;
-    }
+    
 }

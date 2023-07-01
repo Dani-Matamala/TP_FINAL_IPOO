@@ -1,7 +1,7 @@
 <?php
 
-include_once("Viajes_db.php");
-include_once("ResponsableV.php");
+include_once("./Viajes_db.php");
+include_once("./ResponsableV.php");
 
 class Viaje {
     private $idviaje;
@@ -151,6 +151,10 @@ class Viaje {
      * CRUD para la clase Viaje
      */
 
+    /**
+     * Inserta los datos del viaje en la base de datos.
+     * @return bool
+     */
     public function insertar() {
         $conexion = new Viajes_db();
         $res = false;
@@ -170,17 +174,21 @@ class Viaje {
 
             if ($idConsulta = $conexion->devuelveIDInsercion($query)) {
                 $this->setIdViaje($idConsulta);
-                $conexion->desconectar();
+
                 $res = true;
             } else {
                 echo "Error al insertar el registro: " . $conexion->getError();
-                $conexion->desconectar();
+
             }
             $res = true;
         }
         return $res;
     }
 
+    /**
+     * Busca los datos del viaje en la base de datos.
+     * @return bool
+     */
     public function buscar($id) {
         $conexion = new Viajes_db();
         $res = false;
@@ -197,7 +205,7 @@ class Viaje {
 
                 $this->cargar($registro['idviaje'], $registro['vdestino'], $registro['vcantmaxpasajeros'], $newEmpresa, $newResponsable, $registro['vimporte']);
 
-                $conexion->desconectar();
+
                 $res = true;
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
@@ -209,6 +217,10 @@ class Viaje {
         return $res;
     }
 
+    /**
+     * Lista los datos del viaje en la base de datos.
+     * @return bool
+     */
     public static function listar() {
         $conexion = new Viajes_db();
         $col_viajes = [];
@@ -222,7 +234,7 @@ class Viaje {
                     $viaje->buscar($registro['idviaje']); // Llamada al método buscar
                     $col_viajes[] = $viaje;
                 }
-                $conexion->desconectar();
+
                 return $col_viajes;
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
@@ -235,6 +247,10 @@ class Viaje {
     }
 
 
+    /**
+     * Actualiza los datos del viaje en la base de datos.
+     * @return bool
+     */
     public function actualizar() {
         $conexion = new Viajes_db();
         $res = false;
@@ -252,11 +268,11 @@ class Viaje {
                       WHERE idviaje = '$idviaje'";
 
             if ($conexion->consultar($query)) {
-                $conexion->desconectar();
+
                 $res = true;
             } else {
                 echo "Error al actualizar el registro: " . $conexion->getError();
-                $conexion->desconectar();
+
             }
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();
@@ -264,21 +280,35 @@ class Viaje {
 
         return $res;
     }
-
+    
+    /**
+     * Elimina los datos del viaje en la base de datos.
+     * @return bool
+     */
     public function eliminar() {
         $conexion = new Viajes_db();
         $res = false;
         $idviaje = $this->getIdViaje();
 
+        //esto se realiza en el front
+        // $col_pasajeros= Pasajero::listar();
+        // foreach ($col_pasajeros as $pasajero) {
+        //     if ($pasajero->getIdViaje() == $idviaje) {
+        //         $pasajero->setIdViaje(null);
+        //         $pasajero->eliminar();
+        //         $res = true;
+        //     }
+        // }
+
         if ($conexion->conectar()) {
             $query = "DELETE FROM viaje WHERE idviaje = '$idviaje'";
 
             if ($conexion->consultar($query)) {
-                $conexion->desconectar();
+
                 $res = true;
             } else {
                 echo "Error al eliminar el registro: " . $conexion->getError();
-                $conexion->desconectar();
+
             }
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();

@@ -17,18 +17,32 @@ $viaje = new Viaje();
     // }
 
 //Busacar todas las Empresas
-    // $colEmpresas = $empresa->listar();
-    // foreach($colEmpresas as $emp){
-    //     echo $emp->__toString();
-    //     echo "\n"."-----------------------------------------------------------"."\n";
-    // }
 
-//Busacar todas las Empresas
-    // $colResponsable = $responsable->listar();
-    // foreach($colResponsable as $res){
+// $colResponsable = $responsable->listar();
+// foreach($colResponsable as $res){
     //     echo $res->__toString();
     //     echo "\n"."-----------------------------------------------------------"."\n";
     // }
+    
+    // Busacar todas las Empresas
+        $colEmpresas = $empresa->listar();
+        foreach($colEmpresas as $emp){
+            echo $emp->__toString();
+            echo "\n"."-----------------------------------------------------------"."\n";
+        }
+    do{
+        echo "Ingrese el codigo de la empresa que desea eliminar: ";
+        $codigo = trim(fgets(STDIN));
+        if($codigo != ""){
+            if($empresa->buscar($codigo)){
+                $empresa->eliminar();
+            echo "Empresa eliminada con exito"."\n";
+            }else{
+                echo "Empresa no encontrada"."\n";
+            }
+        }
+        
+    }while($codigo === "");
 
 //Buscar todos los viajes
 //Busacar todas las Empresas
@@ -39,10 +53,13 @@ $viaje = new Viaje();
     // }
 
 //buscar una persona y actualizarla
-$pasajero->buscar(111111);
-$pasajero->setNombre('Daniela');
-$pasajero->actualizar();
+    // $pasajero->buscar(111111);
+    // $pasajero->setNombre('Daniela');
+    // $pasajero->actualizar();
+    // $pasajero->eliminar();
+    // $empresa->cargar();
 
+// 
 
 
 

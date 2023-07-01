@@ -70,7 +70,7 @@ class Empresa {
                 }
             }
 
-            $conexion->desconectar();
+        
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();
         }
@@ -78,6 +78,10 @@ class Empresa {
         return $res;
     }
 
+    /**
+     * Busca una determinada empresa en la base de datos.
+     * @return bool
+     */
     public function buscar($idempresa) {
         $conexion = new Viajes_db();
         $res = false;
@@ -93,6 +97,10 @@ class Empresa {
         return $res;
     }
 
+    /**
+     * Lista los datos de la empresa en la base de datos.
+     * @return bool
+     */
     public static function listar() {
         $conexion = new Viajes_db();
         $col_empresa = [];
@@ -106,7 +114,7 @@ class Empresa {
                     $empresa->buscar($registro['idempresa']); // Llamada al método buscar
                     $col_empresa[] = $empresa;               
                 }
-                $conexion->desconectar();
+            
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
             }
@@ -137,7 +145,7 @@ class Empresa {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
             }
 
-            $conexion->desconectar();
+        
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();
         }
@@ -154,15 +162,24 @@ class Empresa {
         $res = false;
 
         if ($conexion->conectar()) {
-            $query = "DELETE FROM empresa";
 
-            if ($conexion->consultar($query)) {
+            //esto se hace en el front
+            // $colViaje = Viaje::listar();
+            // foreach ($colViaje as $viaje) {
+            //     if ($viaje->getEmpresa()->getIdempresa() === $this->getIdempresa()) {
+            //         $viaje->eliminar();
+            //         $res = true;
+            //     }
+            // }
+            $queryEmpresa = "DELETE FROM empresa WHERE idempresa = '{$this->getIdempresa()}'";
+
+            if ($conexion->consultar($queryEmpresa)) {
                 $res = true;
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
             }
 
-            $conexion->desconectar();
+        
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();
         }
