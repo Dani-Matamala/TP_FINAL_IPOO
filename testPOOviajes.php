@@ -269,6 +269,7 @@ function actualizarResponsable() {
         echo "El responsable ingresado no existe\n";
     }
 }
+    
 
 function actualizarEmpresa() {
     $res = false;
@@ -435,7 +436,7 @@ function eliminarEmpresa() {
                     switch ($eliminar) {
                         case 's': {
                             foreach ($col_viaje_empresa as $viaje) {
-                                    $viaje->eliminar();
+                                    eliminarViajeDeEmpresa($viaje->getId());
                                 //debido a la complejidad de la operacion, se debe hace un metodo eliminar viaje
                             }
                         }break;
@@ -457,5 +458,36 @@ function eliminarEmpresa() {
 
     }
 }
+
+function eliminarViajeDeEmpresa($id){
+    $viaje = new Viaje();
+    $viaje->buscar($id);
+    if($viaje->buscar($id)){
+        $col_viajes = getColViajes();//obtengo todos los viajes
+        $col_viajes_empresa = array_filter(
+            $col_viajes,
+            function($viaje) use ($id){
+                return $viaje->getIdEmpresa() === $id;
+                });//filtro por los viajes de la empresa
+        
+        $col_pasajeros = getColPasajeros();//obtengo todos los pasajeros
+        $col_pasajeros_viaje = array_map(
+            function($pasajero, $viaje){
+                if($viaje->getId() === $pasajero->getIdViaje())
+                    return $pasajero;
+            }, $col_pasajeros, $col_viajes_empresa);//hago un mapeo de todos los pasajeros que pertenecen a los viajes de la empresa
+
+        //lo busco en la base de datos por que no esta determinada si un pasajero puede pertenecer a mas de un viaje
+            foreach($col_pasajeros_viaje as $pasajero){
+            if($pasajero->buscar($pasajero->getId()) === true)
+                $pasajero->eliminar();
+            }//por cada pasajero que pertenece a los viajes de la empresa, lo elimino
+        $viaje->eliminar();
+    }
+}
+
+
+        
+
 
 
