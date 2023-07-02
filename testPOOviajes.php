@@ -36,31 +36,39 @@ function getColEmpresa() {
 
 //funciones para mostrar los datos(READ)
 function mostrarViajes() {
-    foreach (getColViajes()  as $viaje) {
-        $viaje->__toString();
-        echo "\n";
+    $col_viajes = getColViajes();
+    foreach($col_viajes as $viaje){
+        echo $viaje->__toString();
+        echo "\n"."-----------------------------------------------------------"."\n";
     }
+    unset($col_viajes);
 }
 
 function mostrarResponsables() {
-    foreach (getColResponsables() as $responsable) {
-        $responsable->__toString();
-        echo "\n";
+    $col_responsables = getColResponsables();
+    foreach($col_responsables as $responsable){
+        echo $responsable->__toString();
+        echo "\n"."-----------------------------------------------------------"."\n";
     }
+    unset($col_responsables);
 }
 
 function mostrarEmpresas() {
-    foreach (getColEmpresa() as $empresa) {
-        $empresa->__toString();
-        echo "\n";
+    $col_empresas = getColEmpresa();
+    foreach($col_empresas as $empresa){ 
+        echo $empresa->__toString();
+        echo "\n"."-----------------------------------------------------------"."\n";
     }
+    unset($col_empresas);
 }
 
 function mostrarPasajeros() {
-    foreach (getColPasajeros() as $pasajero) {
-        $pasajero->__toString();
-        echo "\n";
+    $col_pasajeros = getColPasajeros();
+    foreach($col_pasajeros as $pasajero){
+        echo $pasajero->__toString();
+        echo "\n"."-----------------------------------------------------------"."\n";
     }
+    unset($col_empresas);
 }
 
 
@@ -124,17 +132,33 @@ function cargarViaje() {
 function cargarPasajero() {
     $res = false;
     $pasajero = new Pasajero();
-    $viaje = null; // la carga de viaje se realizara mediante otro metodo
+    $viaje = new Viaje(); 
+
+    //El pasajero debe pertenecer a un viaje
+    $col_viajes = getColViajes();
 
     echo "Ingrese el número de documento del pasajero: ";
-    $numero_documento = fgets(STDIN);
-    if ($pasajero->buscar($numero_documento) !== true) {
+    $numero_documento = trim(fgets(STDIN));
+    if (!$pasajero->buscar($numero_documento)) {
         echo "Ingrese el nombre del pasajero: ";
-        $nombre = fgets(STDIN);
+        $nombre = trim(fgets(STDIN));
         echo "Ingrese el apellido del pasajero: ";
-        $apellido = fgets(STDIN);
+        $apellido = trim(fgets(STDIN));
         echo "Ingrese el teléfono del pasajero: ";
-        $telefono = fgets(STDIN);
+        $telefono = trim(fgets(STDIN));
+        echo "Ingrese el ID del viaje al que pertenece este pasajero: ";
+        mostrarViajes();
+        $id_viaje = trim(fgets(STDIN));
+        $corte = false;
+        while ($corte == false) {
+            if ($viaje->buscar($id_viaje)) {
+                $corte = true;
+            } else{
+                echo "El viaje no existe\n";
+                echo "ingrese una opcion valida\n";
+                mostrarViajes();
+            }
+        }
         $pasajero->cargar($numero_documento, $nombre, $apellido, $telefono, $viaje);
         $res = $pasajero->insertar();
         if ($res == true) {
@@ -144,6 +168,11 @@ function cargarPasajero() {
         }
     } else {
         echo "El pasajero ya existe\n";
+        echo "Desea actualizarlo? (s/n)\n";
+        $opcion = trim(fgets(STDIN));
+        if ($opcion == 's') {
+            $res = actualizarPasajero();
+        } 
     }
 
     return $res;
