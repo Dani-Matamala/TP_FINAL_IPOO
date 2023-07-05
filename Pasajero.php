@@ -15,7 +15,7 @@ class Pasajero {
         $this->nombre = "";
         $this->apellido = "";
         $this->telefono = "";
-        $this->obj_viaje = null;
+        $this->obj_viaje = new Viaje();
     }
 
     public function getDocumento() {
@@ -87,23 +87,17 @@ class Pasajero {
         $res = false;
 
         if ($conexion->conectar()) {
-            echo "Falló la conexión a MySQL: " . $conexion->getError();
-            $res = false;
-        }
 
-        if (!$this->buscar($this->getDocumento())) {
             $query = "INSERT INTO pasajero (pdocumento, pnombre, papellido, ptelefono, idviaje) 
             VALUES ('{$this->getDocumento()}', '{$this->getNombre()}', '{$this->getApellido()}', '{$this->getTelefono()}', '{$this->getObjViaje()->getIdViaje()}')";
 
-
             if ($conexion->consultar($query)) {
-               
                 $res = true;
             } else {
                 echo "Error al insertar el registro: " . $conexion->getError();
-               
             }
-            $res = true;
+        } else {
+            echo "Fallón la conexión a MySQL: " . $conexion->getError();
         }
         return $res;
     }
@@ -119,12 +113,12 @@ class Pasajero {
             $query = "SELECT * FROM pasajero WHERE pdocumento = '$id'";
 
             if ($conexion->consultar($query)) {
-                $registro = $conexion->respuesta();
-                $newviaje = new Viaje();
-                $newviaje->buscar($registro['idviaje']);
-                $this->cargar($registro['pdocumento'], $registro['pnombre'], $registro['papellido'], $registro['ptelefono'], $newviaje);
-               
-                $res =  true;
+                if ($registro = $conexion->respuesta()) {
+                    $newviaje = new Viaje();
+                    $newviaje->buscar($registro['idviaje']);
+                    $this->cargar($registro['pdocumento'], $registro['pnombre'], $registro['papellido'], $registro['ptelefono'], $newviaje);
+                    $res =  true;
+                }
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
             }
@@ -135,24 +129,24 @@ class Pasajero {
         return $res;
     }
 
-    /**
+    
+     /**
      * Lista los datos de los pasajeros eexistentes en la base de datos.
      * @return Array
      */
-    public static function listar() {
+    public static function listar($condicion) {
         $conexion = new Viajes_db();
         $col_pasajeros = [];
+        $condicion = $condicion != "" ? "where ".$condicion : "";
 
         if ($conexion->conectar()) {
-            $query = "SELECT * FROM pasajero";
-
+            $query = "SELECT * FROM pasajero ".$condicion;
             if ($conexion->consultar($query)) {
                 while ($registro = $conexion->respuesta()) {
                     $pasajero = new Pasajero();
                     $pasajero->buscar($registro['pdocumento']);
                     $col_pasajeros[] = $pasajero;
                 }
-               
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
             }
@@ -162,6 +156,8 @@ class Pasajero {
 
         return $col_pasajeros;
     }
+
+
     /**
      * Actualiza los datos del pasajero en la base de datos.
      * @return bool
@@ -175,11 +171,10 @@ class Pasajero {
                       WHERE pdocumento = '{$this->getDocumento()}'";
 
             if ($conexion->consultar($query)) {
-               
+
                 $res = true;
             } else {
                 echo "Error al actualizar el registro: " . $conexion->getError();
-               
             }
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();
@@ -201,11 +196,10 @@ class Pasajero {
             $query = "DELETE FROM pasajero WHERE pdocumento = " . $this->getDocumento();
 
             if ($conexion->consultar($query)) {
-               
+
                 $res = true;
             } else {
                 echo "Error al eliminar el registro: " . $conexion->getError();
-               
             }
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();

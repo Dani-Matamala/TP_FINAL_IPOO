@@ -5,7 +5,7 @@ class Empresa {
     private $direccion;
 
     public function __construct() {
-        $this->idempresa = null;
+        $this->idempresa = 0;
         $this->nombre = "";
         $this->direccion = "";
     }
@@ -57,10 +57,9 @@ class Empresa {
         if ($conexion->conectar()) {
             $nombre = $this->getNombre();
             $direccion = $this->getDireccion();
-
             //setIdEmpresa($id) es privado
-            if (!$this->getIdempresa()=== null) {
-                $query = "INSERT INTO empresa (nombre, direccion) VALUES ($nombre, $direccion)";
+            if ($this->getIdempresa() === 0) {
+                $query = "INSERT INTO empresa (enombre, edireccion) VALUES ('$nombre', '$direccion')";
 
                 if ($id = $conexion->devuelveIDInsercion($query)) {
                     $this->setIdEmpresa($id);
@@ -68,9 +67,7 @@ class Empresa {
                 } else {
                     echo "Error al ejecutar la consulta: " . $conexion->getError();
                 }
-            }
-
-        
+            }        
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();
         }
@@ -101,20 +98,21 @@ class Empresa {
      * Lista los datos de la empresa en la base de datos.
      * @return Array
      */
-    public static function listar() {
+
+    public static function listar($condicion) {
         $conexion = new Viajes_db();
         $col_empresa = [];
+        $condicion = $condicion != "" ? "where ".$condicion : "";
 
         if ($conexion->conectar()) {
-            $query = "SELECT * FROM empresa";
+            $query = "SELECT * FROM empresa".$condicion;
 
             if ($conexion->consultar($query)) {
                 while ($registro = $conexion->respuesta()) {
                     $empresa = new Empresa();
-                    $empresa->buscar($registro['idempresa']); // Llamada al método buscar
-                    $col_empresa[] = $empresa;               
+                    $empresa->buscar($registro['idempresa']);
+                    $col_empresa[] = $empresa;
                 }
-            
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
             }
@@ -124,6 +122,7 @@ class Empresa {
 
         return $col_empresa;
     }
+
 
     /**
      * Actualiza los datos de la empresa en la base de datos.
@@ -135,8 +134,9 @@ class Empresa {
 
         if ($conexion->conectar()) {
             $nombre = $this->getNombre();
+            $direccion = $this->getDireccion();
 
-            $query = "UPDATE empresa SET nombre = '$nombre' WHERE idempresa = '{$this->getIdempresa()}'";
+            $query = "UPDATE empresa SET enombre = '$nombre', edireccion = '$direccion'  WHERE idempresa = '{$this->getIdempresa()}'";
 
 
             if ($conexion->consultar($query)) {
@@ -162,15 +162,6 @@ class Empresa {
         $res = false;
 
         if ($conexion->conectar()) {
-
-            //esto se hace en el front
-            // $colViaje = Viaje::listar();
-            // foreach ($colViaje as $viaje) {
-            //     if ($viaje->getEmpresa()->getIdempresa() === $this->getIdempresa()) {
-            //         $viaje->eliminar();
-            //         $res = true;
-            //     }
-            // }
             $queryEmpresa = "DELETE FROM empresa WHERE idempresa = '{$this->getIdempresa()}'";
 
             if ($conexion->consultar($queryEmpresa)) {

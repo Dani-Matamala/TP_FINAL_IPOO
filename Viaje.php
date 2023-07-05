@@ -13,7 +13,7 @@ class Viaje {
     private $importe;
 
     public function __construct() {
-        $this->idviaje = "";
+        $this->idviaje = 0;
         $this->destino = "";
         $this->maxPasajeros = 0;
         $this->obj_empresa = new Empresa();
@@ -71,12 +71,16 @@ class Viaje {
     }
 
     public function getPasajeros() {
-        return $this->col_pasajeros;
+        $col = Pasajero::listar("");
+        $col_pasajeros = [];
+        $col_pasajeros = array_filter($col, function ($pasajero) {
+            return $pasajero?->getObjviaje()->getIdViaje()  === $this->getIdViaje();
+        });
+        return $col_pasajeros;
     }
 
     public function getColPasajeros() {
-        $pasajero = "";
-        foreach ($this->getPasajeros()  as $pasajero){
+        foreach ($this->getPasajeros()  as $pasajero) {
             $pasajero .=  $pasajero->__toString() . "\n";
         };
 
@@ -93,16 +97,16 @@ class Viaje {
     }
 
     public function __toString() {
-        $empresa = $this->getEmpresa()->getIdempresa()!== 0 ? $this->getEmpresa()->__toString() : "Sin empresa asignada";
-        $responsable = $this->getResponsable()->getNumeroEmpleado() !== 0 ? $this->getResponsable()->__toString() : "Sin responsable asignado";
+        $empresa = $this->getEmpresa()->getIdempresa() !== 0 ? $this->getEmpresa()->getIdempresa() : "Sin empresa asignada";
+        $responsable = $this->getResponsable()->getNumeroEmpleado() !== 0 ? $this->getResponsable()->getNumeroEmpleado() : "Sin responsable asignado";
 
         return "ID Viaje: " . $this->getIdViaje() . "\n" .
             "Destino: " . $this->getDestino() . "\n" .
             "Máximo de pasajeros: " . $this->getMaxPasajeros() . "\n" .
             "Empresa: " . $empresa . "\n" .
             "Responsable: " . $responsable . "\n" .
-            "Importe: " . $this->getImporte() . "\n".
-            "Pasajeros: " . $this->getColPasajeros();
+            "Importe: " . $this->getImporte() . "\n" .
+            "Pasajeros: " . count($this->getPasajeros());
     }
 
     private function existePasajero($pasajero) {
@@ -140,7 +144,7 @@ class Viaje {
         if ($this->hayPasajesDisponible()) {
             $this->agregarPasajero($objPasajero);
         } else {
-            return null;// debe ser manejado en la clase principal 
+            return null; // debe ser manejado en la clase principal 
         }
     }
 
@@ -160,27 +164,24 @@ class Viaje {
         $res = false;
 
         if ($conexion->conectar()) {
-            echo "Falló la conexión a MySQL: " . $conexion->getError();
-            $res = false;
-        }
+            if (!$this->buscar($this->getIdViaje())) {
+                $empresa = $this->getEmpresa() ? $this->getEmpresa()->getIdempresa() : 0;
+                $responsable = $this->getResponsable() ? $this->getResponsable()->getNumeroEmpleado() : 0;
 
-        if (!$this->buscar($this->getIdViaje())) {
-            $empresa = $this->getEmpresa() ? $this->getEmpresa()->getIdempresa() : 0;
-            $responsable = $this->getResponsable() ? $this->getResponsable()->getNumeroEmpleado() : 0;
+                $query = "INSERT INTO viaje (vdestino, vcantmaxpasajeros, idempresa, rnumeroempleado, vimporte) 
+                VALUES ('{$this->getDestino()}', '{$this->getMaxPasajeros()}', '$empresa', 
+                '$responsable', '{$this->getImporte()}')";
 
-            $query = "INSERT INTO viaje (vdestino, vcantmaxpasajeros, idempresa, rnumeroempleado, vimporte) 
-            VALUES ('{$this->getDestino()}', {$this->getMaxPasajeros()}, '$empresa', 
-            '$responsable', {$this->getImporte()})";
-
-            if ($idConsulta = $conexion->devuelveIDInsercion($query)) {
-                $this->setIdViaje($idConsulta);
-
+                if ($idConsulta = $conexion->devuelveIDInsercion($query)) {
+                    $this->setIdViaje($idConsulta);
+                    $res = true;
+                } else {
+                    echo "Error al insertar el registro: " . $conexion->getError();
+                }
                 $res = true;
-            } else {
-                echo "Error al insertar el registro: " . $conexion->getError();
-
             }
-            $res = true;
+        } else {
+            echo "Falló la conexión a MySQL: " . $conexion->getError();
         }
         return $res;
     }
@@ -197,16 +198,14 @@ class Viaje {
             $query = "SELECT * FROM viaje WHERE idviaje = '$id'";
 
             if ($conexion->consultar($query)) {
-                $registro = $conexion->respuesta();
-                $newEmpresa = new Empresa();
-                $newEmpresa->buscar($registro['idempresa']);
-                $newResponsable = new ResponsableV();
-                $newResponsable->buscar($registro['rnumeroempleado']);
-
-                $this->cargar($registro['idviaje'], $registro['vdestino'], $registro['vcantmaxpasajeros'], $newEmpresa, $newResponsable, $registro['vimporte']);
-
-
-                $res = true;
+                if ($registro = $conexion->respuesta()) {
+                    $newEmpresa = new Empresa();
+                    $newEmpresa->buscar($registro['idempresa']);
+                    $newResponsable = new ResponsableV();
+                    $newResponsable->buscar($registro['rnumeroempleado']);
+                    $this->cargar($registro['idviaje'], $registro['vdestino'], $registro['vcantmaxpasajeros'], $newEmpresa, $newResponsable, $registro['vimporte']);
+                    $res = true;
+                }
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
             }
@@ -217,16 +216,18 @@ class Viaje {
         return $res;
     }
 
+    
     /**
-     * Lista los datos del viaje en la base de datos.
+     * Lista los datos del viaje en la base de datossegun una condicion.
      * @return Array
      */
-    public static function listar() {
+    public static function listar($condicion) {
         $conexion = new Viajes_db();
         $col_viajes = [];
+        $condicion = $condicion != "" ? " where ".$condicion : "";
 
         if ($conexion->conectar()) {
-            $query = "SELECT * FROM viaje";
+            $query = "SELECT * FROM viaje".$condicion;
 
             if ($conexion->consultar($query)) {
                 while ($registro = $conexion->respuesta()) {
@@ -263,8 +264,8 @@ class Viaje {
 
         if ($conexion->conectar()) {
             $query = "UPDATE viaje SET vdestino = '$destino', 
-                      vcantmaxpasajeros = $maxPasajeros, idempresa = '$obj_empresa', 
-                      rnumeroempleado = '$responsable', vimporte = $importe 
+                      vcantmaxpasajeros = '$maxPasajeros', idempresa = '$obj_empresa', 
+                      rnumeroempleado = '$responsable', vimporte = '$importe' 
                       WHERE idviaje = '$idviaje'";
 
             if ($conexion->consultar($query)) {
@@ -272,7 +273,6 @@ class Viaje {
                 $res = true;
             } else {
                 echo "Error al actualizar el registro: " . $conexion->getError();
-
             }
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();
@@ -280,7 +280,7 @@ class Viaje {
 
         return $res;
     }
-    
+
     /**
      * Elimina los datos del viaje en la base de datos.
      * @return bool
@@ -298,7 +298,6 @@ class Viaje {
                 $res = true;
             } else {
                 echo "Error al eliminar el registro: " . $conexion->getError();
-
             }
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();

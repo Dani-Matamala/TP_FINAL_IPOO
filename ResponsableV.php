@@ -6,17 +6,17 @@ class ResponsableV {
     private $apellido;
 
     public function __construct() {
-        $this->numero_empleado = 0;
-        $this->numero_licencia = 0;
         $this->nombre = "";
         $this->apellido = "";
+        $this->numero_empleado = 0;
+        $this->numero_licencia = 0;
     }
 
-    public function cargar($nombre, $apellido, $numero_empleado, $numero_licencia) {
-        $this->setNombre($nombre);
-        $this->setApellido($apellido);
+    public function cargar($numero_empleado, $numero_licencia, $nombre, $apellido) {
         $this->setNumeroEmpleado($numero_empleado);
         $this->setNumeroLicencia($numero_licencia);
+        $this->setNombre($nombre);
+        $this->setApellido($apellido);
     }
 
 
@@ -71,23 +71,25 @@ class ResponsableV {
         $conexion = new Viajes_db();
         $res = false;
 
-        if ($conexion->getError()) {
-            echo "Falló la conexión a MySQL: " . $conexion->getError();
-            $res = false;
+        if ($conexion->conectar()) {
             $numero_empleado = $this->getNumeroEmpleado();
             $numero_licencia = $this->getNumeroLicencia();
             $nombre = $this->getNombre();
             $apellido = $this->getApellido();
-            
-            if (!$this->buscar($this->getNumeroEmpleado())) {
-                $query = "INSERT INTO responsable (rnumeroempleado, rnumerolicencia, rnombre, rapellido) VALUES ('$numero_empleado', '$numero_licencia', '$nombre', '$apellido')";
 
-                if ($conexion->consultar($query)) {
+            if (!$this->buscar($this->getNumeroEmpleado())) {
+                $query = "INSERT INTO responsable (rnumerolicencia, rnombre, rapellido) 
+                VALUES ('$numero_licencia', '$nombre', '$apellido')";
+
+                if ($numero_empleado = $conexion->devuelveIDInsercion($query)) {
+                    $this->setNumeroEmpleado($numero_empleado);
                     $res = true;
                 } else {
                     echo "Error al insertar el registro: " . $conexion->getError();
                 }
             }
+        } else {
+            echo "Falló la conexión a MySQL: " . $conexion->getError();
         }
         return $res;
     }
@@ -105,9 +107,10 @@ class ResponsableV {
             $query = "SELECT * FROM responsable WHERE rnumeroempleado = '$numero_empleado'";
 
             if ($conexion->consultar($query)) {
-                $registro = $conexion->respuesta();
-                $this->cargar($registro['rnombre'], $registro['rapellido'], $registro['rnumeroempleado'], $registro['rnumerolicencia']);
-                $res =  true;
+                if ($registro = $conexion->respuesta()) {
+                    $this->cargar($registro['rnumeroempleado'], $registro['rnumerolicencia'], $registro['rnombre'], $registro['rapellido']);
+                    $res =  true;
+                }
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
             }
@@ -118,31 +121,32 @@ class ResponsableV {
         return $res;
     }
 
-    /**
-     * Lista los datos de los responsable que exiten en la base de datos.
+     /**
+     * lista los datos de la tabla responsable en la base de datos segun una condicion.
      * @return Array
      */
-    public static function listar() {
+    public static function listar($condicion) {
         $conexion = new Viajes_db();
-        $col_responsables = [];
+        $col_responsable = [];
+        $condicion = $condicion != "" ? "where ".$condicion : "";
 
         if ($conexion->conectar()) {
-            $query = "SELECT * FROM responsable";
+            $query = "SELECT * FROM responsable". $condicion;
 
             if ($conexion->consultar($query)) {
                 while ($registro = $conexion->respuesta()) {
                     $responsable = new ResponsableV();
                     $responsable->buscar($registro['rnumeroempleado']);
-                    $col_responsables[] = $responsable;
+                    $col_responsable[] = $responsable;
                 }
-                return $col_responsables;
             } else {
                 echo "Error al ejecutar la consulta: " . $conexion->getError();
             }
         } else {
             echo "Falló la conexión a MySQL: " . $conexion->getError();
         }
-        return $col_responsables;
+
+        return $col_responsable;
     }
 
     /**
@@ -179,7 +183,7 @@ class ResponsableV {
         $res = false;
 
         if ($conexion->conectar()) {
-            $query = "DELETE FROM responsable WHERE rnumeroempleado = '$this->numero_empleado'";
+            $query = "DELETE FROM responsable WHERE rnumeroempleado = '{$this->getNumeroEmpleado()}'";
 
             if ($conexion->consultar($query)) {
                 $res = true;

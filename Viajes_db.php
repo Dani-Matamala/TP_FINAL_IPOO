@@ -43,7 +43,7 @@ class Viajes_db  {
     public  function conectar(){
         $resp  = false;
         $conexion = mysqli_connect($this->HOSTNAME,$this->USUARIO,$this->CLAVE,$this->BASEDATOS);
-        if ($conexion){
+        if ($conexion !== false){
             if (mysqli_select_db($conexion,$this->BASEDATOS)){
                 $this->CONEXION = $conexion;
                 unset($this->QUERY);
@@ -53,7 +53,7 @@ class Viajes_db  {
                 $this->ERROR = mysqli_errno($conexion) . ": " .mysqli_error($conexion);
             }
         }else{
-            $this->ERROR =  mysqli_errno($conexion) . ": " .mysqli_error($conexion);
+            $this->ERROR = "Error de conexión: " . mysqli_connect_error();
         }
         return $resp;
     }
@@ -110,7 +110,7 @@ class Viajes_db  {
         unset($this->ERROR);
         $this->QUERY = $consulta;
         if ($this->RESULT = mysqli_query($this->CONEXION,$consulta)){
-            $id = mysqli_insert_id();
+            $id = mysqli_insert_id($this->CONEXION);
             $resp =  $id;
         } else {
             $this->ERROR =mysqli_errno( $this->CONEXION) . ": " . mysqli_error( $this->CONEXION);
